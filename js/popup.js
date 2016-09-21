@@ -1,13 +1,14 @@
-//,"https://ajax.googleapis.com/"
- var someapp = angular.module('stockWatchApp',[]);
- someapp.controller('stockWatchController', function ($scope, $http, $interval) {
+
+ var app = angular.module('stockWatchApp',[]);
+ app.controller('stockWatchController', function ($scope, $http, $interval) {
     $scope.message = "";
     $scope.stocksData = [];
     $scope.tickerArr = [];
     $scope.expandedArr = [];
     $scope.chartURLArrKey = [];
     $scope.chartURLArrVal = [];
-
+	
+    //Show associated chart
     $scope.changeChartURL = function(data,val){
       data.duration = val;
       var symbol = data.Symbol;
@@ -20,6 +21,7 @@
       data.chartURL = val;
     };
     
+        //Method get current time used to generated random number
 	$scope.getCurrentTime = function(){
 		var objToday = new Date();
 		dayOfMonth = objToday.getDate();
@@ -32,12 +34,14 @@
 		return today;
 	};
 	
+    //Setting default chart
     $scope.chartInit = function(data){
       if(data.chartURL === undefined){
         data.chartURL = '1d';  
       }
     };
     
+    //Functionality for + button
     $scope.expandedClick = function(data){
       var symbol = data.Symbol;
       data.expanded = !data.expanded;
@@ -49,9 +53,10 @@
       
     }
     
+    //Get json response for given tickers separated by comma
     $scope.loadStockDataFromTickr = function(tickers){
 	  var columns = "LastTradeTime%2CSymbol%2CChange%2CPercentChange%2CLastTradePriceOnly%2CName%2COpen%2CPreviousClose%2CYearHigh%2CYearLow%2CLastTradeDate";
-      tickers = tickers + "%2C%22" +$scope.getCurrentTime() +"%22";
+      tickers = tickers + "%2C%22" +$scope.getCurrentTime() +"%22";//:D
 	  var url = "http://query.yahooapis.com/v1/public/yql?q=select%20"+ columns +"%20from"+
                 "%20yahoo.finance.quotes%20where%20symbol%20IN%20("
                 +tickers+
@@ -84,6 +89,7 @@
       });
     };
     
+    //Delete ticker 
     $scope.deleteTicker = function(data){
       var itemArr = $scope.tickerArr;
       var index = itemArr.indexOf(data.Symbol);
@@ -110,6 +116,7 @@
           }); 
     };
     
+    
     $scope.reloadStockData = function(){
       chrome.storage.sync.get("tickers", function(items) {
         if (!chrome.runtime.error) {
@@ -135,6 +142,7 @@
       });
     };
     
+    //Check if given ticker is valid
     $scope.addToWatchList = function(){
       var tckr = $scope.tckrEntered;
       if(!tckr){
@@ -158,6 +166,7 @@
         });
     };
     
+    //Added new stocks entered by user to chrome storage
     $scope.AddTickerToChrome = function(){
       chrome.storage.sync.get("tickers", function(items) {
         if (!chrome.runtime.error) {
@@ -180,5 +189,7 @@
       });
     };
     $scope.reloadStockData();
+    
+    //refresh stock every 7 seconds
     $interval($scope.reloadStockData,7000);
 });
